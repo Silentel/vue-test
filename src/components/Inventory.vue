@@ -2,13 +2,16 @@
   <div class="grid">
     <div
       draggable="true"
-      v-for="cell in cells"
-      :key="cell.id"
-      :id="`div-${cell-1}-${id}`"
+      v-for="slot of slots"
+      :key="slot.index"
+      :data-index="slot.index"
       @dragstart="drag"
       @dragover.prevent
       @drop.stop="drop"
     >
+      <span v-if="slot.content">
+        {{ slot.content.icon }}
+      </span>
     </div>
   </div>
 </template>
@@ -19,65 +22,43 @@ export default {
   data () {
     return {
       cells: 9,
-      currentTarget: ''
+      currentTarget: '',
+      slots: [],
     }
   },
   methods: {
     drag (cell) {
-      this.currentTarget = cell.target.id
+      console.log(cell.target.dataset.index)
+      this.currentTarget = cell.target.dataset.index
     },
     drop (cell) {
-      const oldEl = document.getElementById(this.currentTarget).firstChild
-      const newEl = document.getElementById(cell.target.id).firstChild
+      if (cell.target.dataset.index === undefined) {
+        const parentDiv = cell.target.parentNode
 
-      if (oldEl) {
+        console.log(parentDiv.dataset.index)
 
-        const parentDivOld = oldEl.parentNode
+        const oldVal = this.slots[this.currentTarget].content
+        const newVal = this.slots[parentDiv.dataset.index].content
 
-        if (!newEl) {
-          const oldElClone = parentDivOld.cloneNode(true).firstChild
-          const parentDivNew = document.getElementById(cell.target.id)
-          parentDivNew.appendChild(oldElClone)
+        this.slots[parentDiv.dataset.index].content = oldVal
+        this.slots[this.currentTarget].content = newVal
+      } else {
+        console.log(cell.target.dataset.index)
 
-          parentDivOld.removeChild(oldEl)
-
-
-          console.debug('old position: ', parentDivOld.id.slice(4))
-          console.debug('new position: ', parentDivNew.id.slice(4))
-        } else {
-          const parentDivNew = newEl.parentNode
-
-          const oldElClone = parentDivOld.cloneNode(true).firstChild
-          const newElClone = parentDivNew.cloneNode(true).firstChild
-
-          parentDivNew.appendChild(oldElClone)
-          parentDivOld.appendChild(newElClone)
-
-          parentDivNew.removeChild(newEl)
-          parentDivOld.removeChild(oldEl)
-
-
-          console.debug('old position: ', parentDivOld.id.slice(4))
-          console.debug('new position: ', parentDivNew.id.slice(4))
-        }
+        const oldVal = this.slots[this.currentTarget].content        
+        const newVal = this.slots[cell.target.dataset.index].content
+        
+        this.slots[cell.target.dataset.index].content = oldVal
+        this.slots[this.currentTarget].content = newVal
       }
     }
   },
   mounted () {
-    for (let j = 0; j < this.cells; j++) {
-      const divId = document.getElementById(`div-${j}-${this.id}`)
-
-      const item = this.items.find(i => {
-        let n = Math.sqrt(this.cells)*i.y + i.x
-        return n === j
-      })
-
-      if (item && Math.sqrt(this.cells)*item.y + item.x === j) {
-        let p = document.createElement("span");
-        let p1_content = document.createTextNode(`${item.icon}`);
-        p.appendChild(p1_content)
-        divId.appendChild(p1_content)
-      }
+    for (let i = 0; i < this.cells; i++) {
+      this.slots.push({content: null, index: i})
+    }
+    for (let item of this.items) {
+      this.slots[item.y * 3 + item.x].content = item
     }
   }
 }
