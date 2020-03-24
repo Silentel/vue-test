@@ -1,9 +1,9 @@
 <template>
   <div id="app">
     <h1>Первый инвентарь</h1>
-    <inventory :id="1" :items="items"></inventory>
+    <inventory :items="items"></inventory>
     <h1>Второй инвентарь</h1>
-    <inventory :id="2" :items="items2"></inventory>
+    <inventory :items="items2"></inventory>
   </div>
 </template>
 
